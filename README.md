@@ -1,0 +1,1 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fyabslabs%2Fsimple-auth.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fyabslabs%2Fsimple-auth?ref=badge_shield)
