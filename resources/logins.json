@@ -1,0 +1,22 @@
+{
+    "logins": [
+        {
+            "id": 1,
+            "username": "RS380",
+            "password": "changeme",
+            "roles": [
+                "user", 
+                "admin"
+            ]
+        },
+        {
+            "id": 2,
+            "username": "ffo",
+            "password": "changeme",
+            "roles": [
+                "user", 
+                "admin"
+            ]
+        }
+    ]
+}
