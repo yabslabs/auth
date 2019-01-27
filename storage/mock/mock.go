@@ -1,4 +1,4 @@
-package file
+package mock
 
 import (
 	"encoding/json"
@@ -15,10 +15,14 @@ type IDP struct {
 	logins model.Logins
 }
 
-var idp *IDP
+func Init() *IDP {
+	idp := &IDP{logins: model.Logins{}}
+	idp.readDefaultLogins()
+	return idp
+}
 
-func (i *IDP) Validate(username, password string) bool {
-	for _, login := range idp.logins.Logins {
+func (i *IDP) Login(username, password string) bool {
+	for _, login := range i.logins.Logins {
 		if username != login.Username {
 			continue
 		}
@@ -29,12 +33,16 @@ func (i *IDP) Validate(username, password string) bool {
 	return false
 }
 
-func init() {
-	idp = &IDP{logins: model.Logins{}}
-	readDefaultLogins()
+func (i *IDP) GetUserRoles(username string) []model.Role {
+	for _, login := range i.logins.Logins {
+		if login.Username == username {
+			return login.Roles
+		}
+	}
+	return nil
 }
 
-func readDefaultLogins() {
+func (i *IDP) readDefaultLogins() {
 	loginsFile, err := os.Open(loginsPath)
 	if err != nil {
 		log.Fatalf("unable to open logins file: %v", err)
@@ -46,7 +54,7 @@ func readDefaultLogins() {
 		log.Fatalf("unable to read logins file %v", err)
 	}
 
-	if err = json.Unmarshal(loginBytes, &idp.logins); err != nil {
+	if err = json.Unmarshal(loginBytes, &i.logins); err != nil {
 		log.Fatalf("unable to unmarshal logins %v", err)
 	}
 }

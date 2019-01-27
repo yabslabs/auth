@@ -11,4 +11,6 @@ type Login struct {
 	Roles    []Role `json:"roles"`
 }
 
+type Roles *[]Role
+
 type Role string
