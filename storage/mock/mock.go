@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/yabslabs/simple-auth/model"
+	"github.com/yabslabs/auth/model"
 )
 
 const loginsPath = "../../resources/logins.json"

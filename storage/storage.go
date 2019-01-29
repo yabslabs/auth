@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/yabslabs/simple-auth/model"
+	"github.com/yabslabs/auth/model"
 )
 
 type Auth interface {
