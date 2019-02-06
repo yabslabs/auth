@@ -1,0 +1,149 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
+
+package yabslabs.auth.api.v1;
+option go_package = "authAPI";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Authorization Service of SecureConnect";
+        version: "1.0";
+        contact: {
+            url: "https://github.com/yabslabs/auth"
+        };
+    };
+
+    schemes: HTTPS;
+
+    consumes: "application/json";
+    consumes: "application/grpc";
+
+    produces: "application/json";
+    produces: "application/grpc";
+};
+
+service AuthService {
+
+    option (yabslabs.auth.api.v1.service_auth) = {
+        resource_name: "AUTH-V1"
+    };
+}
+
+message UserID{
+    string id = 1;
+}
+
+message UserRequest{
+    string id =1 ;
+    string firstname =2;
+    string lastname = 3;
+    string password = 4;
+    string email = 5 [(validate.rules).string.email = true];
+    string seq = 6;
+}
+
+message User{
+    string id =1;
+    string firstname = 2;
+    string lastname = 3;
+    string password = 4;
+    string email = 5 [(validate.rules).string.email = true];
+    google.protobuf.Timestamp creationDate = 6;
+    google.protobuf.Timestamp changeDate = 7;
+    string seq = 8;
+}
+
+message Users{
+    repeated User users = 1;
+}
+
+message GroupRequest{
+    string id = 1;
+    string name = 2;
+    repeated string subgroups = 3;
+    string seq = 4;
+    repeated string projects = 5;
+    repeated string users = 6;
+}
+
+message Group{
+    string id = 1;
+    string name = 2;
+    repeated Group subgroups = 3;
+    google.protobuf.Timestamp creationDate = 4;
+    google.protobuf.Timestamp changeDate = 5;
+    string seq = 6;
+    repeated Project projects = 7;
+    repeated User users = 8;
+}
+
+message Groups{
+    repeated Group groups = 1;
+}
+message ProejctID{
+    string id = 1;
+}
+
+message ProjectRequest{
+    string id = 1;
+    string name = 2;
+    string seq = 3;
+}
+
+message Project{
+    string id = 1;
+    string name = 2;
+    google.protobuf.Timestamp creationDate = 3;
+    google.protobuf.Timestamp changeDate = 4;
+    string seq = 5;
+}
+
+message Projects{
+    repeated Project projects = 1;
+} 
+
+message AuthorizationID{
+    string id = 1;
+}
+
+message AuthorizationRequest{
+    string id = 1;
+    string groupid = 2;
+    string roleid = 3;
+    string userid = 4;
+    string seq = 5;
+}
+
+message Authorization{
+    string id = 1;
+    Group group = 2;
+    Role role = 3;
+    User user = 4;
+    google.protobuf.Timestamp creationDate = 5;
+    string seq = 6;
+}
+
+message Authorizations{
+    repeated Authorization authorizations = 1;
+}
+
+message RoleID{
+    string id = 1;
+}
+
+message Role{
+    string id = 1;
+    string name = 2;
+    google.protobuf.Timestamp creationDate = 3;
+    string seq = 4;
+}
+
+message Roles{
+    repeated Role roles = 1;
+}
