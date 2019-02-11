@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
+
+package yabslabs.auth.api.v1;
+option go_package = "API";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Authorization Service for yabs";
+        version: "1.0";
+        contact: {
+            url: "https://github.com/yabslabs/auth"
+        };
+    };
+
+    schemes: HTTPS;
+
+    consumes: "application/json";
+    consumes: "application/grpc";
+
+    produces: "application/json";
+    produces: "application/grpc";
+};
+
+service AuthService {
+    rpc AddUser(AddUserRequest) returns (AddUserResponse) {
+        option (google.api.http) = {
+            post: "/users"
+            body: "*"
+        };
+    }
+
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/users"
+        };
+    }
+
+    rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse) {
+        option (google.api.http) = {
+            get: "/users/{id}"
+        };
+    }
+
+    rpc FilterUser(FilterUserRequest) returns (FilterUserResponse) {
+        option (google.api.http) = {
+            post: "/users/_search"
+            body: "*"
+        };
+    }
+
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+        option (google.api.http) = {
+            put: "/users/{id}"
+        };
+    }
+
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
+        option (google.api.http) = {
+            delete: "/users/{id}"
+        };
+    }
+
+    rpc AddUserToGroup(AddUserToGroupRequest) returns (AddUserToGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/{id}/users/{user_id}"
+        };
+    }
+
+    rpc GetUserFromGroup(GetUserFromGroupRequest) returns (GetUserFromGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/{id}/users/{user_id}"
+        };
+    }
+
+    rpc DeleteUserFromGroup(DeleteUserFromGroupRequest) returns (DeleteUserFromGroupResponse) {
+        option (google.api.http) = {
+            delete: "/groups/{id}/users/{user_id}"
+        };
+    }
+
+    rpc AddUserToProject(AddUserToProjectRequest) returns (AddUserToProjectResponse) {
+        option (google.api.http) = {
+            post: "/projects/{id}/users/{user_id}"
+        };
+    }
+
+    rpc GetUserFromProject(GetUserFromProjectRequest) returns (GetUserFromProjectResponse) {
+        option (google.api.http) = {
+            post: "/projects/{id}/users/{user_id}"
+        };
+    }
+
+    rpc DeleteUserFromProject(DeleteUserFromProjectRequest) returns (DeleteUserFromProjectResponse) {
+        option (google.api.http) = {
+            delete: "/projects/{id}/users/{user_id}"
+        };
+    }
+
+    rpc //change password
+
+    rpc //reset password
+
+    rpc //add two factor
+
+    rpc //reset two factor
+}
+
+message AddUserRequest {
+
+}
+
+message AddUserResponse {
+
+}
+
+message GetUserRequest {
+
+}
+
+message GetUserResponse {
+
+}
+
+message GetUserByIdRequest {
+
+}
+
+message GetUserByIdResponse {
+
+}
+
+message FilterUserRequest {
+
+}
+
+message FilterUserResponse {
+
+}
+
+message UpdateUserRequest {
+
+}
+
+message UpdateUserResponse {
+
+}
+
+message DeleteUserRequest {
+
+}
+
+message DeleteUserResponse {
+
+}
+
+message AddUserToGroupRequest {
+    
+}
+
+message AddUserToGroupResponse {
+
+}
+
+message GetUserFromGroupRequest {
+
+}
+
+message GetUserFromGroupResponse {
+
+}
+
+message DeleteUserFromGroupRequest {
+
+}
+
+message DeleteUserFromGroupResponse {
+
+}
+
+message AddUserToProjectRequest {
+
+}
+
+message AddUserToProjectResponse {
+
+}
+
+message GetUserFromProjectRequest {
+
+}
+
+message GetUserFromProjectResponse {
+
+}
+
+message DeleteUserFromProjectRequest {
+
+}
+
+message DeleteUserFromProjectResponse {
+    
+}
