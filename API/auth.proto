@@ -88,13 +88,13 @@ service AuthService {
         };
     }
 
-    rpc //change password
+    //change password
 
-    rpc //reset password
+    //reset password
 
-    rpc //add two factor
+    //add two factor
 
-    rpc //reset two factor
+    //reset two factor
 }
 
 message AddUserRequest {
@@ -172,7 +172,8 @@ message DeleteMemberFromGroupResponse {
 message Group {
     Header header = 1; //API Header from yabs/api/core.proto
     Metadata metadata = 2; //API Metadata from yabs/api/core.proto
-    Members members = 3;    
+    string id = 3;
+    Members members = 4;    
 }
 
 message Groups {
@@ -189,8 +190,21 @@ message Members {
 
 message Role {
     string id = 1;
+    string name = 2;
+    string description = 3;
 }
 
 message Roles {
     repeated role = 1;
+}
+
+message Authorization {
+    string id = 1;
+    Group group = 2;
+    Role group = 3;
+    Member member = 4;
+}
+
+message Authorizations {
+    Authorization authorization = 1;
 }
