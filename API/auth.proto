@@ -70,21 +70,21 @@ service AuthService {
 
     rpc AddMemberToGroup(AddMemberToGroupRequest) returns (AddMemberToGroupResponse) {
         option (google.api.http) = {
-            post: "/groups/{id}/members/{user_id}"
+            post: "/groups/{group_id}/members/{user_id}"
             body: "*"
         };
     }
 
     rpc GetMemberFromGroup(GetMemberFromGroupRequest) returns (GetMemberFromGroupResponse) {
         option (google.api.http) = {
-            post: "/groups/{id}/members/{user_id}"
+            post: "/groups/{group_id}/members/{user_id}"
             body: "*"
         };
     }
 
     rpc DeleteMemberFromGroup(DeleteMemberFromGroupRequest) returns (DeleteMemberFromGroupResponse) {
         option (google.api.http) = {
-            delete: "/groups/{id}/members/{user_id}"
+            delete: "/groups/{group_id}/members/{user_id}"
         };
     }
 
@@ -167,4 +167,30 @@ message DeleteMemberFromGroupRequest {
 
 message DeleteMemberFromGroupResponse {
 
+}
+
+message Group {
+    Header header = 1; //API Header from yabs/api/core.proto
+    Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    Members members = 3;    
+}
+
+message Groups {
+    repeated group = 1;
+}
+
+message Member {
+    string id = 1;
+}
+
+message Members {
+    repeated member = 1;
+}
+
+message Role {
+    string id = 1;
+}
+
+message Roles {
+    repeated role = 1;
 }
