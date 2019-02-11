@@ -8,7 +8,7 @@ import "github.com/mwitkow/go-proto-validators/validator.proto";
 import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
 
 package yabslabs.auth.api.v1;
-option go_package = "API";
+option go_package = "api";
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
     info: {
@@ -58,6 +58,7 @@ service AuthService {
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
             put: "/users/{id}"
+            body: "*"
         };
     }
 
@@ -67,39 +68,23 @@ service AuthService {
         };
     }
 
-    rpc AddUserToGroup(AddUserToGroupRequest) returns (AddUserToGroupResponse) {
+    rpc AddMemberToGroup(AddMemberToGroupRequest) returns (AddMemberToGroupResponse) {
         option (google.api.http) = {
-            post: "/groups/{id}/users/{user_id}"
+            post: "/groups/{id}/members/{user_id}"
+            body: "*"
         };
     }
 
-    rpc GetUserFromGroup(GetUserFromGroupRequest) returns (GetUserFromGroupResponse) {
+    rpc GetMemberFromGroup(GetMemberFromGroupRequest) returns (GetMemberFromGroupResponse) {
         option (google.api.http) = {
-            post: "/groups/{id}/users/{user_id}"
+            post: "/groups/{id}/members/{user_id}"
+            body: "*"
         };
     }
 
-    rpc DeleteUserFromGroup(DeleteUserFromGroupRequest) returns (DeleteUserFromGroupResponse) {
+    rpc DeleteMemberFromGroup(DeleteMemberFromGroupRequest) returns (DeleteMemberFromGroupResponse) {
         option (google.api.http) = {
-            delete: "/groups/{id}/users/{user_id}"
-        };
-    }
-
-    rpc AddUserToProject(AddUserToProjectRequest) returns (AddUserToProjectResponse) {
-        option (google.api.http) = {
-            post: "/projects/{id}/users/{user_id}"
-        };
-    }
-
-    rpc GetUserFromProject(GetUserFromProjectRequest) returns (GetUserFromProjectResponse) {
-        option (google.api.http) = {
-            post: "/projects/{id}/users/{user_id}"
-        };
-    }
-
-    rpc DeleteUserFromProject(DeleteUserFromProjectRequest) returns (DeleteUserFromProjectResponse) {
-        option (google.api.http) = {
-            delete: "/projects/{id}/users/{user_id}"
+            delete: "/groups/{id}/members/{user_id}"
         };
     }
 
@@ -160,50 +145,26 @@ message DeleteUserResponse {
 
 }
 
-message AddUserToGroupRequest {
+message AddMemberToGroupRequest {
     
 }
 
-message AddUserToGroupResponse {
+message AddMemberToGroupResponse {
 
 }
 
-message GetUserFromGroupRequest {
+message GetMemberFromGroupRequest {
 
 }
 
-message GetUserFromGroupResponse {
+message GetMemberFromGroupResponse {
 
 }
 
-message DeleteUserFromGroupRequest {
+message DeleteMemberFromGroupRequest {
 
 }
 
-message DeleteUserFromGroupResponse {
+message DeleteMemberFromGroupResponse {
 
-}
-
-message AddUserToProjectRequest {
-
-}
-
-message AddUserToProjectResponse {
-
-}
-
-message GetUserFromProjectRequest {
-
-}
-
-message GetUserFromProjectResponse {
-
-}
-
-message DeleteUserFromProjectRequest {
-
-}
-
-message DeleteUserFromProjectResponse {
-    
 }
