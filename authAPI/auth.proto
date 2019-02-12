@@ -33,6 +33,184 @@ service AuthService {
     option (yabslabs.auth.api.v1.service_auth) = {
         resource_name: "AUTH-V1"
     };
+
+    rpc Healthz(google.protobuf.Empty) returns (yabslabs.common.api.ReturnMessage) {
+        option (google.api.http) = {
+           get: "/healthz"
+        };
+    }
+    rpc Ready(google.protobuf.Empty) returns (yabslabs.common.api.ReturnMessage) {
+        option (google.api.http) = {
+           get: "/ready"
+        };
+    }
+
+    rpc Validate(google.protobuf.Empty) returns (yabslabs.common.api.Labels) {
+        option (google.api.http) = {
+           get: "/validate"
+        };
+    }
+
+//Users
+    rpc GetUsers(google.protobuf.Empty) returns (Users) {
+        option (google.api.http) = {
+           get: "/users"
+        };
+    }
+
+    rpc CreateUser(UserRequest) returns (User) {
+        option (google.api.http) = {
+           post: "/users"
+           body: "*"
+        };
+    }
+
+    rpc UpdateUser(UserRequest) returns (User) {
+        option (google.api.http) = {
+           put: "/users/{id}"
+           body: "*"
+        };
+    }
+
+    rpc DeleteUser(UserID) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+           delete: "/users/{id}"
+        };
+    }
+
+//Groups
+    rpc GetGroups(google.protobuf.Empty) returns (Groups) {
+        option (google.api.http) = {
+           get: "/groups"
+        };
+    }
+
+    rpc CreateGroup(GroupRequest) returns (Group) {
+        option (google.api.http) = {
+           post: "/groups"
+           body: "*"
+        };
+    }
+
+    rpc UpdateGroup(GroupRequest) returns (Group) {
+        option (google.api.http) = {
+           put: "/groups/{id}"
+           body: "*"
+        };
+    }
+//SubGroups
+    rpc CreateSubGroup(SubgroupRequest) returns (Group) {
+        option (google.api.http) = {
+           post: "/groups/{groupid}/subgroups"
+           body: "*"
+        };
+    }
+
+    rpc GetSubGroups(google.protobuf.Empty) returns (Groups) {
+        option (google.api.http) = {
+           get: "/groups/{groupid}/subgroups"
+        };
+    }
+
+    rpc DeleteSubGroup(SubgroupID) returns (Group) {
+        option (google.api.http) = {
+           delete: "/groups/{groupid}/subgroups/{id}"
+        };
+    }
+
+    rpc DeleteGroup(GroupID) returns (Group) {
+        option (google.api.http) = {
+           delete: "/groups/{id}"
+        };
+    }
+
+//Roles
+    rpc GetRoles(google.protobuf.Empty) returns (Roles) {
+        option (google.api.http) = {
+           get: "/roles"
+        };
+    }
+
+    rpc CreateRoles(RoleRequest) returns (Role) {
+        option (google.api.http) = {
+           post: "/roles"
+           body: "*"
+        };
+    }
+
+    rpc UpdateRoles(RoleRequest) returns (Role) {
+        option (google.api.http) = {
+           put: "/roles/{id}"
+           body: "*"
+        };
+    }
+    
+    rpc DeleteRole(RoleID) returns (Role) {
+        option (google.api.http) = {
+           delete: "/roles/{id}"
+        };
+    }
+
+//Authorizations
+    rpc GetAuthorizations(google.protobuf.Empty) returns (Authorizations) {
+        option (google.api.http) = {
+        get: "/authorizations"
+        };
+    }
+
+    rpc CreateAuthorizations(AuthorizationRequest) returns (Authorization) {
+        option (google.api.http) = {
+        post: "/authorizations"
+        body: "*"
+        };
+    }
+
+    rpc UpdateAuthorizations(AuthorizationRequest) returns (Authorization) {
+        option (google.api.http) = {
+        put: "/authorizations/{id}"
+        body: "*"
+        };
+    }
+
+    rpc DeleteAuthorization(AuthorizationID) returns (Authorization) {
+        option (google.api.http) = {
+        delete: "/authorizations/{id}"
+        };
+    }
+
+//Token
+    // OIDC discovery endpoint
+    // provides information about this service
+    rpc GetConfiguration (google.protobuf.Empty) returns (OidcConfiguration) {
+        option (google.api.http) = {
+           get: "/.well-known/openid-configuration"
+        };
+
+        option (abraxas.common.api.cache) = {
+            max_age: 21600 // 6h
+        };
+    }
+
+    // OIDC introspect endpoint
+    // validates a token, client needs to be authenticated.
+    rpc IntrospectToken (IntrospectTokenRequest) returns (IntrospectTokenResponse) {
+        option (google.api.http)  = {
+            post: "/token/introspect"
+            body: "*"
+        };
+    }
+    // corresponding endpoint for oidc request with grant type client_credentials
+    // should be used to obtain a token for a client/service. Does not support users.
+    // Client-Credentials can be sent via Basic or Body. For security reasons Basic should be preferred.
+    rpc GetAccessToken (AccessTokenRequest) returns (TokenResponse) {
+        option (google.api.http) = {
+           post: "/token/access"
+           body: "*"
+        };
+    }
+
+
+
 }
 
 message UserID{
@@ -61,6 +239,23 @@ message User{
 
 message Users{
     repeated User users = 1;
+}
+
+message GroupID{
+    string id = 1;
+}
+
+message SubgroupID{
+    string groupid = 1;
+    string id = 2;
+}
+message SubgroupRequest{
+    string groupid = 1;
+    string id = 2;
+    string name = 3;
+    string seq = 4;
+    repeated string projects = 5;
+    repeated string users = 6;
 }
 
 message GroupRequest{
@@ -136,6 +331,11 @@ message Authorizations{
 message RoleID{
     string id = 1;
 }
+message RoleRequest{
+    string id = 1;
+    string name = 2;
+    string seq = 3;
+}
 
 message Role{
     string id = 1;
@@ -146,4 +346,44 @@ message Role{
 
 message Roles{
     repeated Role roles = 1;
+}
+
+message AccessTokenRequest {
+    string client_id = 1;
+    string client_secret = 2;
+    repeated string scope = 3;
+}
+
+message TokenResponse {
+    string token = 1;
+    int64 expires_in = 2;
+}
+
+message IntrospectTokenRequest {
+    string token = 1;
+}
+
+message IntrospectTokenResponse {
+    bool active = 1;
+    string sub = 2;
+    int64 exp = 3;
+}
+
+message OidcConfiguration {
+    string issuer = 1;
+    string authorization_endpoint = 2;
+    string token_endpoint = 3;
+    string introspection_endpoint = 4;
+    string userinfo_endpoint = 5;
+    string end_session_endpoint = 6;
+    string check_session_iframe = 7;
+    string jwks_uri = 8;
+    repeated string scopes_supported = 9;
+    repeated string response_types_supported = 10;
+    repeated string response_modes_supported = 11;
+    repeated string grant_types_supported = 12;
+    repeated string subject_types_supported = 13;
+    repeated string id_token_signing_alg_values_supported = 14;
+    repeated string token_endpoint_auth_methods_supported = 15;
+    repeated string claims_supported = 16;
 }
