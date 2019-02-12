@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "github.com/yabslabs/yabs/API/core.proto";
+
 package yabslabs.mgmt.api.v1;
 option go_package = "api";
 
@@ -22,17 +24,11 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 };
 
 service AuthService {
-
-    rpc AddUser(AddUserRequest) returns (AddUserResponse) {
+//User
+    rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
         option (google.api.http) = {
             post: "/users"
             body: "*"
-        };
-    }
-
-    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
-        option (google.api.http) = {
-            get: "/users"
         };
     }
 
@@ -42,7 +38,7 @@ service AuthService {
         };
     }
 
-    rpc FilterUser(FilterUserRequest) returns (FilterUserResponse) {
+    rpc FilterUsers(FilterUserRequest) returns (FilterUserResponse) {
         option (google.api.http) = {
             post: "/users/_search"
             body: "*"
@@ -59,6 +55,60 @@ service AuthService {
     rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
         option (google.api.http) = {
             delete: "/users/{id}"
+        };
+    }
+
+    rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse) {
+        option (google.api.http) = {
+            post: "/users/{id}/_changepw"
+            body: "*"
+        };
+    }
+
+    rpc OverwritePassword(OverwritePasswordRequest) returns (OverwritePasswordResponse) {
+        option (google.api.http) = {
+            post: "/users/{id}/_overwritepw"
+            body: "*"
+        };
+    }
+
+//Group
+    rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups"
+            body: "*"
+        };
+    }
+
+    rpc GetGroupById(GetGroupByIdRequest) returns (GetGroupByIdResponse) {
+        option (google.api.http) = {
+            get: "/groups/{id}"
+        };
+    }
+
+    rpc FilterGroups(FilterGroupRequest) returns (FilterGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/_search"
+            body: "*"
+        };
+    }
+
+    rpc UpdateGroup(UpdateGroupRequest) returns (UpdateGroupResponse) {
+        option (google.api.http) = {
+            put: "/groups/{id}"
+            body: "*"
+        };
+    }
+
+    rpc DeleteGroup(DeleteGroupRequest) returns (DeleteGroupResponse) {
+        option (google.api.http) = {
+            delete: "/groups/{id}"
+        };
+    }
+// Member
+    rpc GetAllGroupMembers(google.protobuf.Empty) returns (Users) {
+        option (google.api.http) = {
+            get: "/groups/{group_id}/members"
         };
     }
 
@@ -81,106 +131,380 @@ service AuthService {
             delete: "/groups/{group_id}/members/{user_id}"
         };
     }
+// Subgroup
+    rpc AddSubgroupToGroup(AddSubgroupToGroupRequest) returns (AddSubgroupToGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/{group_id}/subgroup/{subgroup_id}"
+            body: "*"
+        };
+    }
 
-    //change password
+    rpc GetSubgroupFromGroup(GetSubgroupFromGroupRequest) returns (GetSubgroupFromGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/{group_id}/subgroup/{subgroup_id}"
+            body: "*"
+        };
+    }
 
-    //reset password
+    rpc DeleteSubgroupFromGroup(DeleteSubgroupFromGroupRequest) returns (DeleteSubgroupFromGroupResponse) {
+        option (google.api.http) = {
+            delete: "/groups/{group_id}/subgroup/{subgroup_id}"
+        };
+    }
 
+// Roles
+    rpc GetRoles(google.protobuf.Empty) returns (Roles) {
+        option (google.api.http) = {
+           get: "/roles"
+        };
+    }
+ 
+//Authorizations
+    rpc GetAuthorizationByUser(GetAuthorizationByUserRequest) returns (GetAuthorizationByUserResponse) {
+        option (google.api.http) = {
+            get: "/users/{id}/authorizations"
+        };
+    }
+
+    rpc GetAuthorizationByGroup(GetAuthorizationByGroupRequest) returns (GetAuthorizationByGroupResponse) {
+        option (google.api.http) = {
+            get: "/groups/{id}/authorizations"
+        };
+    }
+ 
+    rpc CreateAuthorization(CreateAuthorizationRequest) returns (CreateAuthorizationResponse) {
+        option (google.api.http) = {
+            post: "/authorizations"
+            body: "*"
+        };
+    }
+ 
+    rpc UpdateAuthorizations(UpdateAuthorizationRequest) returns (UpdateAuthorizationResponse) {
+        option (google.api.http) = {
+            put: "/authorizations/{id}"
+            body: "*"
+        };
+    }
+ 
+    rpc DeleteAuthorization(DeleteAuthorizationRequest) returns (DeleteAuthorizationResponse) {
+            option (google.api.http) = {
+            delete: "/authorizations/{id}"
+        };
+    }
     //add two factor
-
     //reset two factor
+    //delete two factor
+    //verify two factor
+}
+message GetAuthorizationByUserRequest {
+    string id = 1;
+}
+message GetAuthorizationByUserResponse {
+    repeated Authorization authorizations = 1;
+}
+message GetAuthorizationByGroupRequest {
+    string id = 1;
+}
+message GetAuthorizationByGroupResponse {
+    repeated Authorization authorizations = 1;
+}
+message CreateAuthorizationRequest {
+    string group_id = 1;
+    string role_id = 2;
+    string user_id = 3;
+}
+message CreateAuthorizationResponse {
+    string id = 1;
+    Group group = 2;
+    Role role = 3;
+    User user = 4;
+}
+message UpdateAuthorizationRequest {
+    string authorization_id = 1;
+    string group_id = 2;
+    string role_id = 3;
+    string user_id = 4;
+}
+message UpdateAuthorizationResponse {
+    string id = 1;
+    Group group = 2;
+    Role role = 3;
+    User user = 4;
+}
+message DeleteAuthorizationRequest {
+    string id = 1;
+}
+message DeleteAuthorizationResponse {
+    string id = 1;
+    Group group = 2;
+    Role role = 3;
+    User user = 4;
 }
 
-message AddUserRequest {
 
+message CreateUserRequest {
+    string preferred_username = 1;
+    string familyname = 2;
+    string givenname = 3;
+
+    string email = 4;
+
+    string phone_number = 5;
+
+    string password = 6;
+    string hash_function = 7;
 }
 
-message AddUserResponse {
+message CreateUserResponse {
+    string id = 1;
+    string preferred_username = 2;
+    string familyname = 3;
+    string givenname = 4;
 
-}
+    string email = 5;
+    bool email_verified = 6;
 
-message GetUserRequest {
-
-}
-
-message GetUserResponse {
-
+    string phone_number = 7;
+    bool phone_number_verified = 8;
 }
 
 message GetUserByIdRequest {
+    string id = 1;
 
 }
 
 message GetUserByIdResponse {
+    string id = 1;
+    string preferred_username = 2;
+    string familyname = 3;
+    string givenname = 4;
 
+    string email = 5;
+    bool email_verified = 6;
+
+    string phone_number = 7;
+    bool phone_number_verified = 8;
 }
 
 message FilterUserRequest {
-
+// dynamic filter
 }
 
 message FilterUserResponse {
-
+    uint64 total_results = 1;
+    uint64 read_results = 2;
+    uint64 count = 3;
+    repeated User users = 4;
 }
 
 message UpdateUserRequest {
+    string id = 1;
+    string preferred_username = 2;
+    string familyname = 3;
+    string givenname = 4;
 
+    string email = 5;
+    bool email_verified = 6;
+
+    string phone_number = 7;
+    bool phone_number_verified = 8;
 }
 
 message UpdateUserResponse {
+    string id = 1;
+    string preferred_username = 2;
+    string familyname = 3;
+    string givenname = 4;
 
+    string email = 5;
+    bool email_verified = 6;
+
+    string phone_number = 7;
+    bool phone_number_verified = 8;
 }
 
 message DeleteUserRequest {
-
+    string id = 1;
 }
 
 message DeleteUserResponse {
+    string id = 1;
+    string preferred_username = 2;
+    string familyname = 3;
+    string givenname = 4;
 
+    string email = 5;
+    bool email_verified = 6;
+
+    string phone_number = 7;
+    bool phone_number_verified = 8;
 }
+
+message ChangePasswordRequest {
+    string id = 1;
+    string old_password = 2;
+    string new_password1 = 3;
+    string new_password2 = 4;
+    string hash_function = 5;
+}
+
+message ChangePasswordResponse {
+    string id = 1;
+    PasswordState state = 2;
+}
+
+enum PasswordState {
+    NONE = 0;
+    ACTIVE = 1;
+    INITIAL = 2;
+    DELETED = 3;
+}
+
+message OverwritePasswordRequest {
+    string id = 1;
+    string hash_function = 5;
+    string password = 2;
+}
+
+message OverwritePasswordResponse {
+    string id = 1;
+    PasswordState state = 2;
+}
+message CreateGroupRequest {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+}
+message CreateGroupResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;  
+}
+message GetGroupByIdRequest {
+    string id = 1;
+}
+message GetGroupByIdResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;  
+}
+message FilterGroupRequest {
+// dynamic filter
+}
+message FilterGroupResponse {
+    uint64 total_results = 1;
+    uint64 read_results = 2;
+    uint64 count = 3;
+    repeated Group groups = 4;
+}
+message UpdateGroupRequest {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+}
+message UpdateGroupResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;  
+}
+message DeleteGroupRequest {
+    string id = 1;
+}
+message DeleteGroupResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;  
+    repeated Group subgroups = 5;
+}
+
 
 message AddMemberToGroupRequest {
-    
+    string group_id = 1;
+    string user_id = 2;
 }
-
 message AddMemberToGroupResponse {
-
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;
 }
 
 message GetMemberFromGroupRequest {
-
+    string group_id = 1;
+    string user_id = 2;
 }
 
 message GetMemberFromGroupResponse {
-
+    string id = 1;
+    User member = 2;
 }
 
 message DeleteMemberFromGroupRequest {
-
+    string group_id = 1;
+    string user_id = 2;
 }
 
 message DeleteMemberFromGroupResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;
+}
 
+
+message AddSubgroupToGroupRequest {
+    string group_id = 1;
+    string subgroup_id = 2;
+}
+message AddSubgroupToGroupResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;
+}
+
+message GetSubgroupFromGroupRequest {
+    string group_id = 1;
+    string subgroup_id = 2;
+}
+
+message GetSubgroupFromGroupResponse {
+    string id = 1;
+    Group group = 2;
+}
+
+message DeleteSubgroupFromGroupRequest {
+    string group_id = 1;
+    string subgroup_id = 2;
+}
+
+message DeleteSubgroupFromGroupResponse {
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    repeated User members = 4;
+    repeated Group subgroups = 5;
 }
 
 message Group {
-    Header header = 1; //API Header from yabs/api/core.proto
-    Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    yabs.core.api.v1.Header header = 1; //API Header from yabs/api/core.proto
+    yabs.core.api.v1.Metadata metadata = 2; //API Metadata from yabs/api/core.proto
     string id = 3;
-    Members members = 4;    
+    repeated User members = 4;  
+    repeated Group subgroups = 5;  
 }
 
 message Groups {
-    repeated group = 1;
-}
-
-message Member {
-    string id = 1;
-    User user = 2;
-}
-
-message Members {
-    repeated member = 1;
+    repeated Group groups = 1;
 }
 
 message Role {
@@ -190,14 +514,14 @@ message Role {
 }
 
 message Roles {
-    repeated role = 1;
+    repeated Role roles = 1;
 }
 
 message Authorization {
     string id = 1;
     Group group = 2;
-    Role group = 3;
-    Member member = 4;
+    Role role = 3;
+    User user = 4;
 }
 
 message Authorizations {
@@ -205,15 +529,20 @@ message Authorizations {
 }
 
 message User {
-    string sub = 1;
+    string id = 1;
     string preferred_username = 2;
-    string name = 3;
-    string family_name = 4;
-    string given_name = 5;
+    string familyname = 3;
+    string givenname = 4;
 
-    string email = 6;
-    bool email_verified = 7;
+    string email = 5;
+    bool email_verified = 6;
 
-    string phone_number = 8;
-    bool phone_number_verified = 9;
+    string phone_number = 7;
+    bool phone_number_verified = 8;
+
+    string password = 9;
+}
+
+message Users {
+    repeated User users = 1;
 }
