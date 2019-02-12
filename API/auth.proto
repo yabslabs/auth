@@ -1,18 +1,13 @@
 syntax = "proto3";
 
-import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-import "protoc-gen-swagger/options/annotations.proto";
-import "github.com/mwitkow/go-proto-validators/validator.proto";
-import "github.com/lyft/protoc-gen-validate/validate/validate.proto";
+// schema tags are required for application/x-www-form-urlencoded
 
 package yabslabs.auth.api.v1;
 option go_package = "api";
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
     info: {
-        title: "Authorization Service for yabs";
+        title: "Authorization Service of yabs";
         version: "1.0";
         contact: {
             url: "https://github.com/yabslabs/auth"
@@ -29,182 +24,199 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 };
 
 service AuthService {
-    rpc AddUser(AddUserRequest) returns (AddUserResponse) {
+
+    // OIDC discovery endpoint
+    // provides information about this service
+    rpc GetConfiguration (google.protobuf.Empty) returns (OidcConfiguration) {
         option (google.api.http) = {
-            post: "/users"
+           get: "/.well-known/openid-configuration"
+        };
+    }
+
+    // OIDC token endpoint, returns token(s)
+    // can be used for:
+    // - code exchange (exchange oidc auth code to appropiate tokens: 'authorization_code')
+    // - issue tokens (ex. access token for services, etc... ex. grant_types: 'client_credentials', 'password', 'urn:yabs:iam:grant_type:role_token')
+    // - exchange tokens (ex. to obtain an ob-token: 'urn:ietf:params:oauth:grant-type:token-exchange', 'urn:yabs:iam:grant_type:ob_token')
+    // supported grant types are exposed via the discovery endpoint. 
+    // The following types are included:
+    // - client_credentials (request token for a service)
+    // - authorization_code (exchange a user-code for the corresponding tokens)
+    // - password (authorize a user directly; only permitted clients, needs role ResourceOwnerCredentialsGrantType, usage should be as limited as possible)
+    // - urn:ietf:params:oauth:grant-type:token-exchange (token exchange => get ob token)
+    // - urn:yabs:iam:grant_type:ob_token (on behalf token for a user to call a service)
+    // - urn:yabs:iam:grant_type:role_token (obtain a role token: get roles of apps inside a token)
+    // Client-Authorization can be done via Basic, Token or Body. 
+    // For security reasons Token should be preferred.
+    // Client-Authorization is needed for all grant types expect client_credentials.
+    rpc GetAuthToken (AuthTokenRequest) returns (AuthTokenResponse) {
+        option (google.api.http) = {
+           post: "/token/auth"
+           body: "*"
+        };
+    }
+
+    // corresponding endpoint for oidc request with grant type client_credentials
+    // should be used to obtain a token for a client/service. Does not support users.
+    // Client-Credentials can be sent via Basic or Body. For security reasons Basic should be preferred.
+    rpc GetAccessToken (AccessTokenRequest) returns (TokenResponse) {
+        option (google.api.http) = {
+           post: "/token/access"
+           body: "*"
+        };
+    }
+
+    // corresponding endpoint for oidc request with grant type urn:yabs:iam:grant_type:role_token
+    // should be used to obtain a roletoken for specified apps.
+    // Client needs to authenticated.
+    rpc GetRoleToken (RoleTokenRequest) returns (TokenResponse) {
+        option (google.api.http) = {
+           post: "/token/roles"
+           body: "*"
+        };
+    }
+
+    // corresponding endpoint for oidc request with grant type urn:yabs:iam:grant_type:ob_token or urn:ietf:params:oauth:grant-type:token-exchange
+    // should be used to obtain an ob token to call another service on behalf of a user.
+    // Client needs to authenticated.
+    rpc GetObToken (ObTokenRequest) returns (TokenResponse) {
+        option (google.api.http) = {
+           post: "/token/ob"
+           body: "*"
+        };
+    }
+
+    // OIDC introspect endpoint
+    // validates a token, client needs to be authenticated.
+    rpc IntrospectToken (IntrospectTokenRequest) returns (IntrospectTokenResponse) {
+        option (google.api.http)  = {
+            post: "/token/introspect"
             body: "*"
         };
     }
 
-    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    // OIDC Keys endpoint
+    // returns the public keys used to sign the tokens
+    rpc GetKeys (google.protobuf.Empty) returns (Keys) {
         option (google.api.http) = {
-            get: "/users"
+           get: "/keys"
         };
     }
 
-    rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse) {
+    // OIDC UserInfo endpoint
+    // returns information about the current user
+    // user needs to be authenticated via token
+    rpc GetUserInfo (google.protobuf.Empty) returns (User) {
         option (google.api.http) = {
-            get: "/users/{id}"
+           get: "/me"
         };
+
+        //this needs an auth methode
     }
 
-    rpc FilterUser(FilterUserRequest) returns (FilterUserResponse) {
-        option (google.api.http) = {
-            post: "/users/_search"
-            body: "*"
-        };
-    }
-
-    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
-        option (google.api.http) = {
-            put: "/users/{id}"
-            body: "*"
-        };
-    }
-
-    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
-        option (google.api.http) = {
-            delete: "/users/{id}"
-        };
-    }
-
-    rpc AddMemberToGroup(AddMemberToGroupRequest) returns (AddMemberToGroupResponse) {
-        option (google.api.http) = {
-            post: "/groups/{group_id}/members/{user_id}"
-            body: "*"
-        };
-    }
-
-    rpc GetMemberFromGroup(GetMemberFromGroupRequest) returns (GetMemberFromGroupResponse) {
-        option (google.api.http) = {
-            post: "/groups/{group_id}/members/{user_id}"
-            body: "*"
-        };
-    }
-
-    rpc DeleteMemberFromGroup(DeleteMemberFromGroupRequest) returns (DeleteMemberFromGroupResponse) {
-        option (google.api.http) = {
-            delete: "/groups/{group_id}/members/{user_id}"
-        };
-    }
-
-    //change password
-
-    //reset password
-
-    //add two factor
-
-    //reset two factor
 }
 
-message AddUserRequest {
-
+message Keys {
+    repeated Key keys = 1;
 }
 
-message AddUserResponse {
-
+message Key {
+    string use = 1;
+    string kty = 2;
+    string kid = 3;
+    string alg = 4;
+    string n = 5;
+    string e = 6;
+    string d = 9;
+    string p = 7;
+    string q = 8;
 }
 
-message GetUserRequest {
-
+message AccessTokenRequest {
+    string client_id = 1;
+    string client_secret = 2;
+    repeated string scope = 3;
 }
 
-message GetUserResponse {
-
+message RoleTokenRequest {
+    string subject_token = 1 [(validator.field) = {string_not_empty: true}];
+    repeated string apps = 2 [(validator.field) = {repeated_count_min: 1}];
 }
 
-message GetUserByIdRequest {
-
+message ObTokenRequest {
+    string subject_token = 1 [(validator.field) = {string_not_empty: true}];
+    string resource = 2 [(validator.field) = {string_not_empty: true}];
 }
 
-message GetUserByIdResponse {
-
+message TokenResponse {
+    string token = 1;
+    int64 expires_in = 2;
 }
 
-message FilterUserRequest {
+message AuthTokenRequest {
+    string grant_type = 1 [(gogoproto.moretags) = "schema:\"grant_type\"", (validator.field) = {string_not_empty: true}];
 
+    // client auth via body, basic or token
+    string client_id = 2 [(gogoproto.moretags) = "schema:\"client_id\""];
+    string client_secret = 3 [(gogoproto.moretags) = "schema:\"client_secret\""];
+
+    // grant type authorization_code
+    string code = 4 [(gogoproto.moretags) = "schema:\"code\""];
+    string redirect_uri = 5 [(gogoproto.moretags) = "schema:\"redirect_uri\""];
+
+    // grant type client_credentials
+    repeated string scope = 6 [(gogoproto.moretags) = "schema:\"scope\""];
+
+    // grant type ob_token/urn:ietf:params:oauth:grant-type:token-exchange, role_token
+    string subject_token = 7 [(gogoproto.moretags) = "schema:\"subject_token\""];
+    string subject_token_type = 8 [(gogoproto.moretags) = "schema:\"subject_token_type\""];
+
+    // grant type role_token
+    repeated string apps = 9 [(gogoproto.moretags) = "schema:\"apps\""];
+
+    // grant type ob_token/urn:ietf:params:oauth:grant-type:token-exchange
+    string resource = 11 [(gogoproto.moretags) = "schema:\"resource\""];
+
+    // grant type password
+    string username = 12 [(gogoproto.moretags) = "schema:\"username\""];
+    string password = 13 [(gogoproto.moretags) = "schema:\"password\""];
 }
 
-message FilterUserResponse {
+message AuthTokenResponse {
+    string access_token = 1 [(gogoproto.moretags) = "schema:\"access_token\""];
+    string id_token = 2 [(gogoproto.moretags) = "schema:\"id_token\""];
+    string token_type = 3 [(gogoproto.moretags) = "schema:\"token_type\""];
+    int64 expires_in = 4 [(gogoproto.moretags) = "schema:\"expires_in\""];
 
+    // token exchange
+    string issued_token_type = 5 [(gogoproto.moretags) = "schema:\"issued_token_type\""];
 }
 
-message UpdateUserRequest {
-
+message IntrospectTokenRequest {
+    string token = 1;
 }
 
-message UpdateUserResponse {
-
+message IntrospectTokenResponse {
+    bool active = 1;
+    string sub = 2;
+    int64 exp = 3;
 }
 
-message DeleteUserRequest {
-
-}
-
-message DeleteUserResponse {
-
-}
-
-message AddMemberToGroupRequest {
-    
-}
-
-message AddMemberToGroupResponse {
-
-}
-
-message GetMemberFromGroupRequest {
-
-}
-
-message GetMemberFromGroupResponse {
-
-}
-
-message DeleteMemberFromGroupRequest {
-
-}
-
-message DeleteMemberFromGroupResponse {
-
-}
-
-message Group {
-    Header header = 1; //API Header from yabs/api/core.proto
-    Metadata metadata = 2; //API Metadata from yabs/api/core.proto
-    string id = 3;
-    Members members = 4;    
-}
-
-message Groups {
-    repeated group = 1;
-}
-
-message Member {
-    string id = 1;
-}
-
-message Members {
-    repeated member = 1;
-}
-
-message Role {
-    string id = 1;
-    string name = 2;
-    string description = 3;
-}
-
-message Roles {
-    repeated role = 1;
-}
-
-message Authorization {
-    string id = 1;
-    Group group = 2;
-    Role group = 3;
-    Member member = 4;
-}
-
-message Authorizations {
-    Authorization authorization = 1;
+message OidcConfiguration {
+    string issuer = 1;
+    string authorization_endpoint = 2;
+    string token_endpoint = 3;
+    string introspection_endpoint = 4;
+    string userinfo_endpoint = 5;
+    string end_session_endpoint = 6;
+    string check_session_iframe = 7;
+    string jwks_uri = 8;
+    repeated string scopes_supported = 9;
+    repeated string response_types_supported = 10;
+    repeated string response_modes_supported = 11;
+    repeated string grant_types_supported = 12;
+    repeated string subject_types_supported = 13;
+    repeated string id_token_signing_alg_values_supported = 14;
+    repeated string token_endpoint_auth_methods_supported = 15;
+    repeated string claims_supported = 16;
 }
