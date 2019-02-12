@@ -1,0 +1,219 @@
+syntax = "proto3";
+
+package yabslabs.mgmt.api.v1;
+option go_package = "api";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Authorization Management Service for yabs";
+        version: "1.0";
+        contact: {
+            url: "https://github.com/yabslabs/auth"
+        };
+    };
+
+    schemes: HTTPS;
+
+    consumes: "application/json";
+    consumes: "application/grpc";
+
+    produces: "application/json";
+    produces: "application/grpc";
+};
+
+service AuthService {
+
+    rpc AddUser(AddUserRequest) returns (AddUserResponse) {
+        option (google.api.http) = {
+            post: "/users"
+            body: "*"
+        };
+    }
+
+    rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/users"
+        };
+    }
+
+    rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse) {
+        option (google.api.http) = {
+            get: "/users/{id}"
+        };
+    }
+
+    rpc FilterUser(FilterUserRequest) returns (FilterUserResponse) {
+        option (google.api.http) = {
+            post: "/users/_search"
+            body: "*"
+        };
+    }
+
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse) {
+        option (google.api.http) = {
+            put: "/users/{id}"
+            body: "*"
+        };
+    }
+
+    rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {
+        option (google.api.http) = {
+            delete: "/users/{id}"
+        };
+    }
+
+    rpc AddMemberToGroup(AddMemberToGroupRequest) returns (AddMemberToGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/{group_id}/members/{user_id}"
+            body: "*"
+        };
+    }
+
+    rpc GetMemberFromGroup(GetMemberFromGroupRequest) returns (GetMemberFromGroupResponse) {
+        option (google.api.http) = {
+            post: "/groups/{group_id}/members/{user_id}"
+            body: "*"
+        };
+    }
+
+    rpc DeleteMemberFromGroup(DeleteMemberFromGroupRequest) returns (DeleteMemberFromGroupResponse) {
+        option (google.api.http) = {
+            delete: "/groups/{group_id}/members/{user_id}"
+        };
+    }
+
+    //change password
+
+    //reset password
+
+    //add two factor
+
+    //reset two factor
+}
+
+message AddUserRequest {
+
+}
+
+message AddUserResponse {
+
+}
+
+message GetUserRequest {
+
+}
+
+message GetUserResponse {
+
+}
+
+message GetUserByIdRequest {
+
+}
+
+message GetUserByIdResponse {
+
+}
+
+message FilterUserRequest {
+
+}
+
+message FilterUserResponse {
+
+}
+
+message UpdateUserRequest {
+
+}
+
+message UpdateUserResponse {
+
+}
+
+message DeleteUserRequest {
+
+}
+
+message DeleteUserResponse {
+
+}
+
+message AddMemberToGroupRequest {
+    
+}
+
+message AddMemberToGroupResponse {
+
+}
+
+message GetMemberFromGroupRequest {
+
+}
+
+message GetMemberFromGroupResponse {
+
+}
+
+message DeleteMemberFromGroupRequest {
+
+}
+
+message DeleteMemberFromGroupResponse {
+
+}
+
+message Group {
+    Header header = 1; //API Header from yabs/api/core.proto
+    Metadata metadata = 2; //API Metadata from yabs/api/core.proto
+    string id = 3;
+    Members members = 4;    
+}
+
+message Groups {
+    repeated group = 1;
+}
+
+message Member {
+    string id = 1;
+    User user = 2;
+}
+
+message Members {
+    repeated member = 1;
+}
+
+message Role {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+}
+
+message Roles {
+    repeated role = 1;
+}
+
+message Authorization {
+    string id = 1;
+    Group group = 2;
+    Role group = 3;
+    Member member = 4;
+}
+
+message Authorizations {
+    Authorization authorization = 1;
+}
+
+message User {
+    string sub = 1;
+    string preferred_username = 2;
+    string name = 3;
+    string family_name = 4;
+    string given_name = 5;
+
+    string email = 6;
+    bool email_verified = 7;
+
+    string phone_number = 8;
+    bool phone_number_verified = 9;
+}
