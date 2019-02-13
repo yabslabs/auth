@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+// schema tags are required for application/x-www-form-urlencoded
+
+package yabslabs.auth.authn.api.v1;
+option go_package = "api";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+    info: {
+        title: "Authorization Service of yabs";
+        version: "1.0";
+        contact: {
+            url: "https://github.com/yabslabs/auth"
+        };
+    };
+
+    schemes: HTTPS;
+
+    consumes: "application/json";
+    consumes: "application/grpc";
+
+    produces: "application/json";
+    produces: "application/grpc";
+};
+
+service AuthnService {
+
+    // IDP Connection
+    /////////////////
+    rpc AuthNRequest (AuthNRequest) returns (AuthNResponse) {
+        option (google.api.http) = {
+            post: "/authn"
+            body: "*"
+         };
+
+    }
+
+    // Login GUI API
+    /////////////////
+    rpc VerifyUserNamePassword (VerifyUserNamePasswordRequest) returns (VerifyUserNamePasswordResponse) {
+        option (google.api.http) = {
+            post: "/authn/verify/userpassword"
+            body: "*"
+         };
+    }
+
+    rpc VerifyMultiFactor (VerifyMultiFactorRequest) returns (VerifyMultiFactorResponse) {
+        option (google.api.http) = {
+            post: "/authn/verify/factors/{id}"
+            body: "*"
+         };
+    }
+
+
+
+}
+
+message AuthNRequest {
+    string id = 1;
+    string scope = 2;
+}
+
+message AuthNResponse {
+    string id = 1;
+    string scopes = 2;
+    AuthNStatus auth_n_status = 3;
+}
+
+enum AuthNStatus {
+    DENIED = 0;
+    SUCESSFULL = 1;
+}
+
+message VerifyUserNamePasswordRequest {
+    string id = 1;
+    string username = 2;
+    string password = 3;
+}
+
+message VerifyUserNamePasswordResponse {
+    string id = 1;
+    bool factor_required = 2;
+    Factors factors = 3;
+    VerifyUserNamePasswordStatus status = 4;
+}
+
+enum VerifyUserNamePasswordStatus {
+    DENIED = 0;
+    SUCESSFULL = 1;
+    // We can add hints like password expired here
+}
+
+//IMHO this should come from the mgmt API
+message Factor {
+    string id = 1;
+    FactorType factor_type = 2;
+}
+
+//IMHO this should come from the mgmt API
+message Factors {
+    repeated factor = 1;
+}
+
+//IMHO this should come from the mgmt API
+enum FactorType {
+    SMS = 0;
+    OTP = 1;
+    TELEGRAM = 2;
+    FBMESSENGER = 3;
+    CTAP1 = 4; //webauthn uf2 keys
+    CTAP2 = 5; //webauthn fido2 keys
+}
+
+message VerifyMultiFactorRequest {
+    string id = 1;
+    //We need object for the different type of factos, becuase they do not all use the same mechanics
+}
+
+message VerifyMultiFactorResponse {
+    string id = 1;
+    bool additional_factor_required = 2;
+    Factors factors = 3;
+    VerifyMultiFactorStatus status = 4;
+}
+
+enum VerifyMultiFactorStatus {
+    DENIED = 0;
+    SUCESSFULL = 1;
+}

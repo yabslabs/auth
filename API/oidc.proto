@@ -2,7 +2,7 @@ syntax = "proto3";
 
 // schema tags are required for application/x-www-form-urlencoded
 
-package yabslabs.auth.api.v1;
+package yabslabs.auth.oidc.api.v1;
 option go_package = "api";
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
@@ -23,7 +23,7 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
     produces: "application/grpc";
 };
 
-service AuthService {
+service OidcService {
 
     // OIDC discovery endpoint
     // provides information about this service
