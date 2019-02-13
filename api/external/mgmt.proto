@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "github.com/yabslabs/yabs/API/core.proto";
 
-package yabslabs.mgmt.api.v1;
+package yabslabs.auth.mgmt.api.v1;
 option go_package = "api";
 
 option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
@@ -23,7 +23,7 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
     produces: "application/grpc";
 };
 
-service AuthService {
+service AuthMgmtService {
 //User
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
         option (google.api.http) = {
@@ -129,26 +129,6 @@ service AuthService {
     rpc DeleteMemberFromGroup(DeleteMemberFromGroupRequest) returns (DeleteMemberFromGroupResponse) {
         option (google.api.http) = {
             delete: "/groups/{group_id}/members/{user_id}"
-        };
-    }
-// Subgroup
-    rpc AddSubgroupToGroup(AddSubgroupToGroupRequest) returns (AddSubgroupToGroupResponse) {
-        option (google.api.http) = {
-            post: "/groups/{group_id}/subgroup/{subgroup_id}"
-            body: "*"
-        };
-    }
-
-    rpc GetSubgroupFromGroup(GetSubgroupFromGroupRequest) returns (GetSubgroupFromGroupResponse) {
-        option (google.api.http) = {
-            post: "/groups/{group_id}/subgroup/{subgroup_id}"
-            body: "*"
-        };
-    }
-
-    rpc DeleteSubgroupFromGroup(DeleteSubgroupFromGroupRequest) returns (DeleteSubgroupFromGroupResponse) {
-        option (google.api.http) = {
-            delete: "/groups/{group_id}/subgroup/{subgroup_id}"
         };
     }
 
