@@ -25,18 +25,18 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 
 service AuthnService {
 
-    // IDP Connection
-    /////////////////
-    rpc AuthNRequest (AuthNRequest) returns (AuthNResponse) {
+    // With this function a IPD / OP (client) can initiate an interactive authN flow (login) 
+    // Non interactive flow like oauth client_credential need to be handeld directly by the specific implementation
+    // However they may call the VerifyUserNamePassword function directly
+    rpc ClientAuthNRequest (ClientAuthNRequest) returns (ClientAuthNResponse) {
         option (google.api.http) = {
-            post: "/authn"
+            post: "/authn/client"
             body: "*"
          };
-
     }
-
-    // Login GUI API
-    /////////////////
+    
+    //With this call a Client (for example our Login GUI) can check the credentials (username / password) against a datastore
+    //If sucessfull the call returns wether additional steps like MFA are necessary or, if this step was sufficient
     rpc VerifyUserNamePassword (VerifyUserNamePasswordRequest) returns (VerifyUserNamePasswordResponse) {
         option (google.api.http) = {
             post: "/authn/verify/userpassword"
@@ -44,6 +44,17 @@ service AuthnService {
          };
     }
 
+    //By clicking a link a user can login in without a need for credentials
+    //In some cases this is used with an MFA function
+    rpc VerifyMagicLink(VerifyMagicLinkRequest) returns (VerifyMagicLinkResponse) {
+        option (google.api.http) = {
+            post: "/authn/verify/magiclink"
+            body: "*"
+         };
+    }
+
+    //The Multifactor verfication is responsible for checking the multifactor credential against the configured type
+    //In some cases this can be used in conjuction with a magic link
     rpc VerifyMultiFactor (VerifyMultiFactorRequest) returns (VerifyMultiFactorResponse) {
         option (google.api.http) = {
             post: "/authn/verify/factors/{id}"
@@ -51,19 +62,46 @@ service AuthnService {
          };
     }
 
-
-
+    //This function is intended to check wether a x509 handshake can be initiaded  this may also be used by headless clients / servers
+    rpc VerifyCertificate (VerifyCertificateRequest) returns (VerifyCertificateResponse) {
+        option (google.api.http) = {
+            post: "/authn/verify/certificate"
+            body: "*"
+         };
+    }
 }
 
+// We should return a JWT for validation by the IDP
 message AuthNRequest {
-    string id = 1;
-    string scope = 2;
+    string id = 1; //This id is also important for the SSO mapping, refresh tokens and session implementation within the specific providers (idp)
+    Scopes scopes = 2;
+    SamlAttributes saml_attributes = 3;
+    ClientType client_type = 4;
 }
 
+//The type of client calling the ClientAuthNRequest function
+enum ClientType {
+    UNKNOWN = 0;
+    WEB = 1;
+    OIDC = 2;
+    SAML = 3;
+}
+
+// This message holds the scopes from the call forward by the oidc op
+message Scopes {
+    repeated string = 1;
+}
+
+// This message holds the scopes from the call forward by the saml idp
+message SamlAttributes {
+    repeated string = 1;
+}
+
+// Returns wether the authN with the user was successfull
 message AuthNResponse {
     string id = 1;
     string scopes = 2;
-    AuthNStatus auth_n_status = 3;
+    AuthNStatus auth_n_status = 3; //On sucess we should return a singed JWT, but maybe for somne clients a JSON is enough
 }
 
 enum AuthNStatus {
@@ -90,6 +128,23 @@ enum VerifyUserNamePasswordStatus {
     // We can add hints like password expired here
 }
 
+message VerifyMagicLinkRequest {
+    string id = 1;
+    string key = 2;
+}
+
+message VerifyMagicLinkResponse {
+    string id = 1; 
+    bool factor_required = 2;
+    Factors factors = 3;
+    VerifyMagicLinkStatus verify_magic_link_status= 4;
+}
+
+enum VerifyMagicLinkStatus {
+    DENIED = 0;
+    SUCESSFULL = 1;
+}
+
 //IMHO this should come from the mgmt API
 message Factor {
     string id = 1;
@@ -109,6 +164,7 @@ enum FactorType {
     FBMESSENGER = 3;
     CTAP1 = 4; //webauthn uf2 keys
     CTAP2 = 5; //webauthn fido2 keys
+    RECOVERYKEY = 6;
 }
 
 message VerifyMultiFactorRequest {
@@ -119,7 +175,7 @@ message VerifyMultiFactorRequest {
 message VerifyMultiFactorResponse {
     string id = 1;
     bool additional_factor_required = 2;
-    Factors factors = 3;
+    Factors factors = 3; //Remaining Factors
     VerifyMultiFactorStatus status = 4;
 }
 
